@@ -69,17 +69,17 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
         alacritty firefox
 
     # Setup Oh My Zsh and Powerlevel10k
-    echo -e "Setting up Oh My Zsh and Powerlevel10k...\n"
+    #echo -e "Setting up Oh My Zsh and Powerlevel10k...\n"
     # install zsh
-    sudo pacman -S --noconfirm zsh
+    #sudo pacman -S --noconfirm zsh
     # install oh-my-zsh
-    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    #sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     # install powerlevel10k
-    yay -S --noconfirm zsh-theme-powerlevel10k-git
-    echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+    #yay -S --noconfirm zsh-theme-powerlevel10k-git
+    #echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 
     # set zsh as default shell
-    chsh -s $(which zsh)
+    #chsh -s $(which zsh)
     # Login to Hyprland every time the system boots
     echo -e "Adding Hyprland to the .bashrc file...\n"
     echo -e "if [ -z \$DISPLAY ] && [ \$(tty) == /dev/tty1 ]; then\n    exec Hyprland\nfi" >>~/.bashrc
