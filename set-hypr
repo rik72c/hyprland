@@ -57,7 +57,7 @@ if [[ $WIFI == "Y" || $WIFI == "y" ]]; then
 fi
 
 ### Install all of the above pacakges ####
-read -n1 -rep 'Would you like to install the packages? (y,n)' INST
+read -n1 -rep 'Would you like to install the basic packages? (y,n)' INST
 if [[ $INST == "Y" || $INST == "y" ]]; then
     yay -S --noconfirm hyprland \
         swaybg swaylock-effects wofi wlogout mako thunar \
@@ -65,9 +65,24 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
         polkit-gnome python-requests \
         grim slurp pamixer brightnessctl gvfs \
         bluez bluez-utils lxappearance xfce4-settings \
-        dracula-gtk-theme dracula-icons-git xdg-desktop-portal-hyprland
+        dracula-gtk-theme dracula-icons-git xdg-desktop-portal-hyprland \
+        alacritty firefox
 
-    yay -S --noconfirm kitty waybar noto-fonts-emoji starship swappy
+    # Setup Oh My Zsh and Powerlevel10k
+    echo -e "Setting up Oh My Zsh and Powerlevel10k...\n"
+    # install zsh
+    sudo pacman -S --noconfirm zsh
+    # install oh-my-zsh
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    # install powerlevel10k
+    yay -S --noconfirm zsh-theme-powerlevel10k-git
+    echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+
+    # set zsh as default shell
+    chsh -s $(which zsh)
+    # Login to Hyprland every time the system boots
+    echo -e "Adding Hyprland to the .bashrc file...\n"
+    echo -e "if [ -z \$DISPLAY ] && [ \$(tty) == /dev/tty1 ]; then\n    exec Hyprland\nfi" >>~/.bashrc
 
     # Start the bluetooth service
     echo -e "Starting the Bluetooth Service...\n"
@@ -79,37 +94,32 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
     yay -R --noconfirm xdg-desktop-portal-gnome xdg-desktop-portal-gtk
 fi
 
+read -n1 -rep 'Would you like to install the developer packages? (y,n)' DEV
+
+if [[ $DEV == "Y" || $DEV == "y" ]]; then
+    yay -S --noconfirm base-devel neovim nodejs npm lazygit
+fi
+
+
 ### Copy Config Files ###
 read -n1 -rep 'Would you like to copy config files? (y,n)' CFG
 if [[ $CFG == "Y" || $CFG == "y" ]]; then
     echo -e "Copying config files...\n"
     cp -R hypr ~/.config/
-    # cp -R kitty ~/.config/
     cp -R mako ~/.config/
-    # cp -R waybar ~/.config/
     cp -R swaylock ~/.config/
     cp -R wofi ~/.config/
+
+    mkdir -p ~/.config/alarritty
     cp alacritty.toml ~/.config/alacritty/
 
     # Set some files as exacutable 
     chmod +x ~/.config/hypr/xdg-portal-hyprland
-    # chmod +x ~/.config/waybar/scripts/waybar-wttr.py
 fi
 
-
-### Install the starship shell ###
-# read -n1 -rep 'Would you like to install the starship shell? (y,n)' STAR
-# if [[ $STAR == "Y" || $STAR == "y" ]]; then
-#     # install the starship shell
-#     echo -e "Updating .bashrc...\n"
-#     echo -e '\neval "$(starship init bash)"' >> ~/.bashrc
-#     echo -e "copying starship config file to ~/.confg ...\n"
-#     cp starship.toml ~/.config/
-# fi
-
 ### Install Microsoft Surface ###
-read -n1 -rep 'Would you like to install Asus ROG software support? (y,n)' ROG
-if [[ $ROG == "Y" || $ROG == "y" ]]; then
+read -n1 -rep 'Would you like to install Microsoft Surface support? (y,n)' SUR
+if [[ $SUR == "Y" || $SUR == "y" ]]; then
     echo -e "Import the keys used to sign packages...\n"
     curl -s https://raw.githubusercontent.com/linux-surface/linux-surface/master/pkg/keys/surface.asc | sudo pacman-key --add -
 
@@ -120,8 +130,7 @@ if [[ $ROG == "Y" || $ROG == "y" ]]; then
     sudo pacman-key --lsign-key 56C464BAAC421453
 
     echo -e "adding the following to the end of /etc/pacman.conf"
-    ## [linux-surface]
-    ## Server = https://pkg.surfacelinux.com/arch/
+
     echo -e "\n[linux-surface]\nServer = https://pkg.surfacelinux.com/arch/" | sudo tee -a /etc/pacman.conf
 
     echo -e "Update the system...\n"
@@ -131,31 +140,6 @@ if [[ $ROG == "Y" || $ROG == "y" ]]; then
     sudo pacman -S linux-surface linux-surface-headers iptsd
     # sudo pacman -S --noconfirm linux-surface linux-surface-headers linux-surface-docs linux-surface-firmware
 fi
-
-### Install software for Asus ROG laptops ###
-# read -n1 -rep 'Would you like to install Asus ROG software support? (y,n)' ROG
-# if [[ $ROG == "Y" || $ROG == "y" ]]; then
-#     echo -e "Adding Keys... \n"
-#     sudo pacman-key --recv-keys 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35
-#     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35
-#     sudo pacman-key --lsign-key 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35
-#     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35
-#
-#     LOC="/etc/pacman.conf"
-#     echo -e "Updating $LOC with g14 repo.\n"
-#     echo -e "\n[g14]\nServer = https://arch.asus-linux.org" | sudo tee -a $LOC
-#     echo -e "\n"
-#     echo -e "Update the system...\n"
-#     sudo pacman -Suy
-#
-#     echo -e "Installing ROG pacakges...\n"
-#     sudo pacman -S --noconfirm asusctl supergfxctl rog-control-center
-#     echo -e "Activating ROG services...\n"
-#     sudo systemctl enable --now power-profiles-daemon.service
-#     sleep 2
-#     sudo systemctl enable --now supergfxd
-#     sleep 2
-# fi
 
 ### Script is done ###
 echo -e "Script had completed.\n"
